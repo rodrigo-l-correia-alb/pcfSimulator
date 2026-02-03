@@ -1,34 +1,46 @@
 import json
 
+from simulator.period import Period
 
-def build_report(data):
+
+def build_report(previous_period: Period,
+                 current_period: Period
+                 ):
+    (previous_period_cnt_requests,
+     previous_period_cnt_percentage,
+     previous_period_losses_percentage,
+     previous_period_losses_volume) = previous_period.calculate_summary()
+
+    phase_one_current_period = current_period.phase_one
+    phase_two_current_period = current_period.phase_two
+
     report = {
         "risk": 0.5,
         "observation": {
             "previous_period_summary": {
-                "cnt_requests": 0.0,
-                "cnt_percentage": 0.0,
-                "losses_percentage": 0.0,
-                "losses_volume": 0.0
+                "cnt_requests": previous_period_cnt_requests,
+                "cnt_percentage": previous_period_cnt_percentage,
+                "losses_percentage": previous_period_losses_percentage,
+                "losses_volume": previous_period_losses_volume
             },
             "current_period": {
                 "phase_one": [{
-                    "date": 0.0,
-                    "duration": 0.0,
-                    "used": 0.0,
-                    "losses": 0.0,
-                    "account": 0.0,
-                    "requests": 0.0,
-                    "handler": "CNT"
+                    "date": phase_one_current_period.date,
+                    "duration": phase_one_current_period.duration,
+                    "used": phase_one_current_period.used,
+                    "losses": phase_one_current_period.losses,
+                    "account": phase_one_current_period.account,
+                    "requests": phase_one_current_period.requests,
+                    "handler": phase_one_current_period.handler,
                 }],
                 "phase_two": [{
-                    "date": 0.0,
-                    "duration": 0.0,
-                    "used": 0.0,
-                    "losses": 0.0,
-                    "account": 0.0,
-                    "requests": 0.0,
-                    "handler": "CTG"
+                    "date": phase_two_current_period.date,
+                    "duration": phase_two_current_period.duration,
+                    "used": phase_two_current_period.used,
+                    "losses": phase_two_current_period.losses,
+                    "account": phase_two_current_period.account,
+                    "requests": phase_two_current_period.requests,
+                    "handler": phase_two_current_period.handler,
                 }]
             }
         }

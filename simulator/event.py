@@ -1,5 +1,10 @@
 class Event:
-    def __init__(self, requests_central, requests_contingency, reported, top_up):
+    def __init__(self,
+                 requests_central: int,
+                 requests_contingency: int,
+                 reported: float,
+                 top_up: float
+                 ):
         self.requests_central = requests_central
         self.requests_contingency = requests_contingency
         self.reported = reported

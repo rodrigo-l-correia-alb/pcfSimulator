@@ -11,7 +11,8 @@ class State:
                  total_request_central: int = 0,
                  total_requests: int = 0,
                  total_used_quota: int = 0,
-                 total_losses: int = 0):
+                 total_losses: int = 0
+                 ):
         self.current_quota = current_quota
         self.current_threshold = current_threshold
         self.current_status = current_status
