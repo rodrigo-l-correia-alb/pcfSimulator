@@ -1,0 +1,11 @@
+initial_amount:
+  mean: 114_000_000
+  std: 46_000_000
+
+min_amount_before_top_up:
+  mean: 17_000_000
+  std: 32_000_000
+
+top_up_amount:
+  mean: 124_000_000
+  std: 82_000_000
