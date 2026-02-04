@@ -2,5 +2,5 @@ from enum import Enum
 
 
 class Status(Enum):
-    CENTRAL = "central"
-    CONTINGENCY = "contingency"
+    CENTRAL = "CNT"
+    CONTINGENCY = "CTG"
