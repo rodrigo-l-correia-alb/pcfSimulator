@@ -3,6 +3,7 @@ import os
 import random
 from random import randint
 
+import requests
 from scipy.stats import norm
 
 import simulator.config as config
@@ -88,7 +89,9 @@ if __name__ == "__main__":
                 with open(filename, "w", encoding="utf-8") as f:
                     f.write(json.dumps(report, indent=4))
 
-                threshold_delta = 0  # call predict method: predict(report)
+                response = requests.post(config.URL, json=report)
+                threshold_delta = response.json().get("action")
+                print(threshold_delta)
                 state.current_threshold *= (1 + threshold_delta)
 
                 print(f"Report saved to {filename}")
