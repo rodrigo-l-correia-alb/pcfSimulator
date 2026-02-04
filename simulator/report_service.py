@@ -1,5 +1,3 @@
-import json
-
 from simulator.period import Period
 
 
@@ -21,14 +19,14 @@ def build_report(previous_period: Period,
                 "cnt_requests": previous_period_cnt_requests,
                 "cnt_percentage": previous_period_cnt_percentage,
                 "losses_percentage": previous_period_losses_percentage,
-                "losses_volume": previous_period_losses_volume
+                "losses_volume": int(round(previous_period_losses_volume))
             },
             "current_period": {
                 "phase_one": [{
                     "date": phase_one_current_period.date,
                     "duration": phase_one_current_period.duration,
-                    "used": phase_one_current_period.used,
-                    "losses": phase_one_current_period.losses,
+                    "used": int(round(phase_one_current_period.used)),
+                    "losses": int(round(phase_one_current_period.losses)),
                     "account": phase_one_current_period.account,
                     "requests": phase_one_current_period.requests,
                     "handler": phase_one_current_period.handler,
@@ -36,8 +34,8 @@ def build_report(previous_period: Period,
                 "phase_two": [{
                     "date": phase_two_current_period.date,
                     "duration": phase_two_current_period.duration,
-                    "used": phase_two_current_period.used,
-                    "losses": phase_two_current_period.losses,
+                    "used": int(round(phase_two_current_period.used)),
+                    "losses": int(round(phase_two_current_period.losses)),
                     "account": phase_two_current_period.account,
                     "requests": phase_two_current_period.requests,
                     "handler": phase_two_current_period.handler,
@@ -45,4 +43,5 @@ def build_report(previous_period: Period,
             }
         }
     }
-    return json.dumps(report, indent=4)
+
+    return report
