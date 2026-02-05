@@ -1,9 +1,7 @@
 import json
 import os
 import random
-from random import randint
 
-import requests
 from scipy.stats import norm
 
 import simulator.config as config
@@ -26,18 +24,16 @@ def get_configs():
     min_amount_before_top_up_norm = abs(
             norm(loc=min_amount_before_top_up_mean, scale=min_amount_before_top_up_std).rvs())
 
+    min_amount_before_top_up_norm = abs(norm.rvs(loc=min_amount_before_top_up_mean, scale=min_amount_before_top_up_std))
+
     return initial_amount_norm, min_amount_before_top_up_norm
-
-
-def get_random_top_up():
-    return abs(norm(loc=config.TOP_UP_AMOUNT_MEAN, scale=config.TOP_UP_AMOUNT_STD).rvs())
 
 
 if __name__ == "__main__":
     initial_amount, min_amount_before_top_up = get_configs()
 
     print("Initial Amount:", initial_amount)
-    print("Minimum Amount Before Top Up:", 100)  # min_amount_before_top_up)
+    print("Minimum Amount Before Top Up:", min_amount_before_top_up)
     print("Number of iterations:", config.NUMBER_OF_ITERATIONS)
 
     state = State(initial_amount, config.INITIAL_THRESHOLD)
@@ -59,15 +55,15 @@ if __name__ == "__main__":
 
         event = Event()
 
-        number_of_requests = randint(config.MIN_REQUESTS, config.MAX_REQUESTS)
+        number_of_requests = 1  # randint(config.MIN_REQUESTS, config.MAX_REQUESTS)
 
         if temp_status is Status.CENTRAL and state.current_status is Status.CONTINGENCY:
-            print("Current quota before closing phase one:", state.current_quota)
+            print("Phase one closed:", current_phase)
             phase_one = current_phase
             current_phase = None
 
         if temp_status is Status.CONTINGENCY and state.current_status is Status.CENTRAL:
-            print("Current quota before closing phase two:", state.current_quota)
+            print("Phase two closed:", current_phase)
             phase_two = current_phase
             current_phase = None
 
@@ -89,28 +85,33 @@ if __name__ == "__main__":
                 with open(filename, "w", encoding="utf-8") as f:
                     f.write(json.dumps(report, indent=4))
 
-                response = requests.post(config.URL, json=report)
-                threshold_delta = response.json().get("action")
-                print(threshold_delta)
-                state.current_threshold *= (1 + threshold_delta)
+                # response = requests.post(config.URL, json=report)
+                # threshold_delta = response.json().get("action")
+                # print(threshold_delta)
+                # state.current_threshold *= (1 + threshold_delta)
 
                 print(f"Report saved to {filename}")
 
                 report_counter += 1
                 period_one = period_two
 
-        if state.current_status is Status.CENTRAL:
-            change_in_quota = random.uniform(1, state.current_quota)
+        if state.current_status == Status.CENTRAL:
+            change_in_quota = random.uniform(0, state.current_quota)
             event.requests_central = number_of_requests
+            event.requests_contingency = 0
         else:
             change_in_quota = random.uniform(0, state.current_quota + 0.1 * state.current_quota)
             event.requests_contingency = number_of_requests
+            event.requests_central = 0
 
         event.reported = change_in_quota
 
         if state.current_quota < min_amount_before_top_up:
-            event.top_up = get_random_top_up()
-            print("Top up is going to occur with value: ", event.top_up)
+            event.top_up = abs(norm(loc=config.TOP_UP_AMOUNT_MEAN, scale=config.TOP_UP_AMOUNT_STD).rvs())
+            state.current_quota += event.top_up
+
+        if event.reported == 0:
+            continue
 
         state.update_from_event(event)
 

@@ -42,6 +42,8 @@ class State:
 
     def update_from_event(self, event: Event):
         # usage
+        print("Before State update from event:", self)
+        print("Event:", event)
         self.current_quota -= event.reported
 
         # losses calc
@@ -50,14 +52,13 @@ class State:
             event.losses = abs(self.current_quota)
             self.current_quota = 0
 
-        # top up
-        self.current_quota += event.top_up
-
         # totals
         self.total_used_quota += event.reported
         self.total_requests += event.requests_central + event.requests_contingency
         self.total_request_central += event.requests_central
         self.total_requests_contingency += event.requests_contingency
+
+        print("After State update from event:", self)
 
     def print_final_results(self):
         losses_percentage = (
