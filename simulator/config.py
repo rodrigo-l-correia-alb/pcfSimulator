@@ -1,3 +1,5 @@
+from scipy.stats import chi2, norm
+
 INITIAL_AMOUNT_MEAN = 114_000_000
 INITIAL_AMOUNT_STD = 46_000_000
 
@@ -19,9 +21,42 @@ MIN_AMOUNT_BEFORE_TOP_UP_STD = 32_000_000
 TOP_UP_AMOUNT_MEAN = 124_000_000
 TOP_UP_AMOUNT_STD = 82_000_000
 
+CTG_THRESHOLD_PERCENTAGE = 0.8
+CTG_QUOTA_BLOCK_SIZE = 0.1
+CTG_MIN_QUOTA = 10485760
+
 MIN_REQUESTS = 1
 MAX_REQUESTS = 13
-INITIAL_THRESHOLD = 10000000 # 3_221_225_472 / 1000
-NUMBER_OF_ITERATIONS = 100
+INITIAL_THRESHOLD = 100_000_00  # 3_221_225_472 / 1000
+NUMBER_OF_SESSIONS = 100
+GRANTED_QUOTA_CNT = 104_857_600
+GRANTED_STATE_UNIT = 104_857_600
 REPORTS_FOLDER = "reports"
 URL = "http://127.0.0.1:5000/sac_interface"
+
+
+def get_initial_amount():
+    return norm().rvs(loc=INITIAL_AMOUNT_MEAN,
+                      scale=INITIAL_AMOUNT_STD)
+
+
+def get_session_duration():
+    return chi2.rvs(df=SESSION_DURATION_DF,
+                    loc=SESSION_DURATION_LOC,
+                    scale=SESSION_DURATION_SCALE)
+
+
+def get_consumption_rate():
+    return chi2.rvs(df=CONSUMPTION_RATE_DF,
+                    loc=CONSUMPTION_RATE_LOC,
+                    scale=CONSUMPTION_RATE_SCALE)
+
+
+def get_min_amount_before_top_up():
+    return norm().rvs(loc=MIN_AMOUNT_BEFORE_TOP_UP_MEAN,
+                      scale=MIN_AMOUNT_BEFORE_TOP_UP_STD)
+
+
+def get_top_up_amount():
+    return norm().rvs(loc=TOP_UP_AMOUNT_MEAN,
+                      scale=TOP_UP_AMOUNT_STD)
