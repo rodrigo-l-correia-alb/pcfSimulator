@@ -1,4 +1,4 @@
-from simulator.event import Event
+from simulator.session import Session
 from simulator.status import Status
 
 
@@ -7,7 +7,6 @@ class State:
                  current_quota: float,
                  current_threshold: float,
                  current_status: Status = Status.CENTRAL,
-                 future_status: Status = Status.CENTRAL,
                  total_requests_contingency: int = 0,
                  total_request_central: int = 0,
                  total_requests: int = 0,
@@ -17,7 +16,6 @@ class State:
         self.current_quota = current_quota
         self.current_threshold = current_threshold
         self.current_status = current_status
-        self.future_status = future_status
         self.total_requests_contingency = total_requests_contingency
         self.total_request_central = total_request_central
         self.total_requests = total_requests
@@ -31,7 +29,6 @@ class State:
             f"  current_quota={self.current_quota:.2f},\n"
             f"  current_threshold={self.current_threshold:.2f},\n"
             f"  current_status={self.current_status.name},\n"
-            f"  future_status={self.future_status.name},\n"
             f"  total_requests_contingency={self.total_requests_contingency},\n"
             f"  total_request_central={self.total_request_central},\n"
             f"  total_requests={self.total_requests},\n"
@@ -40,25 +37,21 @@ class State:
             f")"
         )
 
-    def update_from_event(self, event: Event):
-        # usage
-        print("Before State update from event:", self)
-        print("Event:", event)
-        self.current_quota -= event.reported
-
+    def update_from_session(self, session: Session):
         # losses calc
         if self.current_quota < 0 and self.current_status is Status.CONTINGENCY:
             self.total_losses += abs(self.current_quota)
-            event.losses = abs(self.current_quota)
+            session.losses = abs(self.current_quota)
             self.current_quota = 0
 
         # totals
-        self.total_used_quota += event.reported
-        self.total_requests += event.requests_central + event.requests_contingency
-        self.total_request_central += event.requests_central
-        self.total_requests_contingency += event.requests_contingency
+        self.total_used_quota += session.used
+        self.total_requests += session.requests
 
-        print("After State update from event:", self)
+        if session.handler == Status.CENTRAL:
+            self.total_request_central += session.requests
+        else:
+            self.total_requests_contingency += session.requests
 
     def print_final_results(self):
         losses_percentage = (

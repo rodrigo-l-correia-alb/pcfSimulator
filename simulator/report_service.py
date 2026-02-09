@@ -1,6 +1,18 @@
 from simulator.period import Period
 
 
+def _session_to_dict(session):
+    return {
+        "date": session.date,
+        "duration": session.duration,
+        "used": int(round(session.used)),
+        "losses": int(round(session.losses)),
+        "account": session.account,
+        "requests": session.requests,
+        "handler": session.handler.value,
+    }
+
+
 def build_report(previous_period: Period,
                  current_period: Period
                  ):
@@ -22,24 +34,14 @@ def build_report(previous_period: Period,
                 "losses_volume": int(round(previous_period_losses_volume))
             },
             "current_period": {
-                "phase_one": [{
-                    "date": phase_one_current_period.date,
-                    "duration": phase_one_current_period.duration,
-                    "used": int(round(phase_one_current_period.used)),
-                    "losses": int(round(phase_one_current_period.losses)),
-                    "account": phase_one_current_period.account,
-                    "requests": phase_one_current_period.requests,
-                    "handler": phase_one_current_period.handler,
-                }],
-                "phase_two": [{
-                    "date": phase_two_current_period.date,
-                    "duration": phase_two_current_period.duration,
-                    "used": int(round(phase_two_current_period.used)),
-                    "losses": int(round(phase_two_current_period.losses)),
-                    "account": phase_two_current_period.account,
-                    "requests": phase_two_current_period.requests,
-                    "handler": phase_two_current_period.handler,
-                }]
+                "phase_one": [
+                    _session_to_dict(s)
+                    for s in phase_one_current_period.sessions
+                ],
+                "phase_two": [
+                    _session_to_dict(s)
+                    for s in phase_two_current_period.sessions
+                ]
             }
         }
     }

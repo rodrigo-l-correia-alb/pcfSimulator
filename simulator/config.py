@@ -25,10 +25,8 @@ CTG_THRESHOLD_PERCENTAGE = 0.8
 CTG_QUOTA_BLOCK_SIZE = 0.1
 CTG_MIN_QUOTA = 10485760
 
-MIN_REQUESTS = 1
-MAX_REQUESTS = 13
-INITIAL_THRESHOLD = 100_000_00  # 3_221_225_472 / 1000
-NUMBER_OF_SESSIONS = 100
+INITIAL_THRESHOLD = 81_062_332 # 100_000_00  # 3_221_225_472 / 1000
+NUMBER_OF_SESSIONS = 20
 GRANTED_QUOTA_CNT = 104_857_600
 GRANTED_STATE_UNIT = 104_857_600
 REPORTS_FOLDER = "reports"
@@ -36,8 +34,7 @@ URL = "http://127.0.0.1:5000/sac_interface"
 
 
 def get_initial_amount():
-    return norm().rvs(loc=INITIAL_AMOUNT_MEAN,
-                      scale=INITIAL_AMOUNT_STD)
+    return abs(norm(loc=INITIAL_AMOUNT_MEAN, scale=INITIAL_AMOUNT_STD).rvs())
 
 
 def get_session_duration():
@@ -53,10 +50,8 @@ def get_consumption_rate():
 
 
 def get_min_amount_before_top_up():
-    return norm().rvs(loc=MIN_AMOUNT_BEFORE_TOP_UP_MEAN,
-                      scale=MIN_AMOUNT_BEFORE_TOP_UP_STD)
+    return abs(norm(loc=MIN_AMOUNT_BEFORE_TOP_UP_MEAN, scale=MIN_AMOUNT_BEFORE_TOP_UP_STD).rvs())
 
 
 def get_top_up_amount():
-    return norm().rvs(loc=TOP_UP_AMOUNT_MEAN,
-                      scale=TOP_UP_AMOUNT_STD)
+    return abs(norm(loc=TOP_UP_AMOUNT_MEAN, scale=TOP_UP_AMOUNT_STD).rvs())

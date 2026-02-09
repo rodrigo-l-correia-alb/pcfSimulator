@@ -3,8 +3,8 @@ from simulator.phase import Phase
 
 class Period:
     def __init__(self,
-                 phase_one: Phase,
-                 phase_two: Phase
+                 phase_one: Phase = None,
+                 phase_two: Phase = None
                  ):
         self.phase_one = phase_one
         self.phase_two = phase_two
@@ -24,12 +24,24 @@ class Period:
         )
 
     def calculate_summary(self):
-        cnt_requests = self.phase_one.requests
-        total_requests = self.phase_one.requests + self.phase_two.requests
-        cnt_percentage = round(cnt_requests / total_requests * 100, 2)
+        cnt_requests = 0
+        ctg_requests = 0
 
-        losses_volume = self.phase_two.losses
-        used_volume = self.phase_one.used + self.phase_two.used
+        used_volume = 0
+        losses_volume = 0
+
+        for session in self.phase_one.sessions:
+            cnt_requests += session.requests
+            used_volume += session.used
+
+        for session in self.phase_two.sessions:
+            ctg_requests += session.requests
+            used_volume += session.used
+            losses_volume += session.losses
+
+        total_requests = cnt_requests + ctg_requests
+
+        cnt_percentage = round(cnt_requests / total_requests * 100, 2)
         losses_percentage = round(losses_volume / used_volume * 100, 2)
 
         return cnt_requests, cnt_percentage, losses_percentage, losses_volume
