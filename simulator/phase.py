@@ -6,7 +6,7 @@ class Phase:
         self.sessions = []
 
     def __repr__(self):
-        print(self.sessions)
+        return self.sessions
 
     def append_session(self, session: Session):
         self.sessions.append(session)

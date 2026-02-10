@@ -12,7 +12,7 @@ from simulator.state import State
 from simulator.status import Status
 
 logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
@@ -51,6 +51,7 @@ if __name__ == "__main__":
     threshold_ctg = None
 
     report_counter = 1
+    session_counter = 1
 
     for _ in range(config.NUMBER_OF_SESSIONS):
         if state.current_quota < min_amount_before_top_up:
@@ -63,6 +64,10 @@ if __name__ == "__main__":
             )
 
             state.current_quota += top_up
+
+        if state.current_quota == 0:
+            time_tracker += timedelta(seconds=config.get_zero_amount_top_up_delay())
+            continue
 
         granted_quota_ctg = state.current_quota * config.CTG_QUOTA_BLOCK_SIZE
         threshold_ctg = state.current_quota * config.CTG_THRESHOLD_PERCENTAGE
@@ -83,19 +88,25 @@ if __name__ == "__main__":
         number_of_requests = 1
 
         while True:
+            if time_tracker >= session_end:
+                break
+
             consumption_rate = config.get_consumption_rate()
             request_interval = config.GRANTED_STATE_UNIT / consumption_rate
+            log.info("Request interval: %d", request_interval)
 
-            remaining_time = session_end - time_tracker
+            remaining_time = (session_end - time_tracker).total_seconds()
+            log.info("Remaining time: %d", remaining_time)
             time_tracker += timedelta(seconds=request_interval)
-
             number_of_requests += 1
 
             if state.current_status == Status.CENTRAL:
                 if time_tracker > session_end:
                     time_tracker = session_end
-                    estimated_quota = (config.GRANTED_QUOTA_CNT * remaining_time.total_seconds()) / request_interval
-                    duration_tracker += remaining_time.total_seconds()
+                    estimated_quota = (config.GRANTED_QUOTA_CNT * remaining_time) / request_interval
+                    if estimated_quota > state.current_quota:
+                        estimated_quota = state.current_quota
+                    duration_tracker += remaining_time
                     session.used += estimated_quota
                     state.current_quota -= estimated_quota
 
@@ -118,7 +129,31 @@ if __name__ == "__main__":
 
                 session.used += config.GRANTED_QUOTA_CNT
                 state.current_quota -= config.GRANTED_QUOTA_CNT
+
+                log.debug(
+                        "Giving quota in CENTRAL | granted=%s used=%s remaining_quota=%s",
+                        config.GRANTED_QUOTA_CNT,
+                        session.used,
+                        state.current_quota
+                )
             else:
+                if time_tracker > session_end:
+                    time_tracker = session_end
+                    duration_tracker += remaining_time
+                    estimated_quota = (granted_quota_ctg * remaining_time) / request_interval
+                    if estimated_quota > state.current_quota:
+                        estimated_quota = state.current_quota
+                    session.used += estimated_quota
+                    state.current_quota -= estimated_quota
+
+                    log.debug(
+                            "Session end (CTG - time exhausted) | granted=%s used=%s remaining_quota=%s",
+                            estimated_quota,
+                            session.used,
+                            state.current_quota
+                    )
+                    break
+
                 if state.current_quota < config.CTG_MIN_QUOTA:
                     session.used += state.current_quota
                     state.current_quota = 0
@@ -141,13 +176,28 @@ if __name__ == "__main__":
 
                     break
 
-                session.used += granted_quota_ctg
-                state.current_quota -= granted_quota_ctg
+                amount_to_subtract = min(int(state.current_quota), int(granted_quota_ctg))
+                session.used += amount_to_subtract
+                state.current_quota -= amount_to_subtract
+
+                log.debug(
+                        "Giving quota in CONTINGENCY | granted=%s used=%s remaining_quota=%s",
+                        granted_quota_ctg,
+                        session.used,
+                        state.current_quota
+                )
+
                 granted_quota_ctg = state.current_quota * config.CTG_QUOTA_BLOCK_SIZE
 
         session.requests = number_of_requests
-        state.update_from_session(session)
-        phase.append_session(session)
+
+        if session.used < 0:
+            log.error("NEGATIVE DETECTED: session.used=%s | state.quota=%s", session.used, state.current_quota)
+            log.error("Session: %s", session)
+
+        if session.used != 0:
+            state.update_from_session(session)
+            phase.append_session(session)
 
         log.info(
                 "Session closed | start=%s duration=%s status=%s requests=%s used=%s quota_after=%s",
@@ -208,11 +258,12 @@ if __name__ == "__main__":
                 with open(filename, "w", encoding="utf-8") as f:
                     f.write(json.dumps(report, indent=4, default=json_converter))
 
-                print(f"Report saved to {filename}")
+                log.info(f"Report saved to %s", filename)
                 report_counter += 1
 
                 previous_period = current_period
                 current_period = Period()
 
     log.info("Simulation finished")
-    state.print_final_results()
+    log.info("Report counter: %s", report_counter)
+    state.log_final_results(log)

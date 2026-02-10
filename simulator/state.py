@@ -53,7 +53,7 @@ class State:
         else:
             self.total_requests_contingency += session.requests
 
-    def print_final_results(self):
+    def log_final_results(self, log):
         losses_percentage = (
             self.total_losses / self.total_used_quota
             if self.total_used_quota else 0.0
@@ -89,12 +89,16 @@ class State:
 
         line = f"+-{'-' * col1_width}-+-{'-' * col2_width}-+"
 
-        print("\nFinal results")
-        print(line)
-        print(f"| {'Metric'.ljust(col1_width)} | {'Value'.ljust(col2_width)} |")
-        print(line)
+        lines = []
+        lines.append("")
+        lines.append("Final results")
+        lines.append(line)
+        lines.append(f"| {'Metric'.ljust(col1_width)} | {'Value'.ljust(col2_width)} |")
+        lines.append(line)
 
         for metric, value in rows:
-            print(f"| {metric.ljust(col1_width)} | {value.ljust(col2_width)} |")
+            lines.append(f"| {metric.ljust(col1_width)} | {value.ljust(col2_width)} |")
 
-        print(line)
+        lines.append(line)
+
+        log.info("\n".join(lines))
