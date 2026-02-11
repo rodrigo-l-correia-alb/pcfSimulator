@@ -38,13 +38,11 @@ class State:
         )
 
     def update_from_session(self, session: Session):
-        # losses calc
         if self.current_quota < 0 and self.current_status is Status.CONTINGENCY:
             self.total_losses += abs(self.current_quota)
             session.losses = abs(self.current_quota)
             self.current_quota = 0
 
-        # totals
         self.total_used_quota += session.used
         self.total_requests += session.requests
 

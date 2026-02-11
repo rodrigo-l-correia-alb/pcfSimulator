@@ -3,7 +3,7 @@ from simulator.period import Period
 
 def _session_to_dict(session):
     return {
-        "date": session.date,
+        "date": session.date.isoformat(),
         "duration": session.duration,
         "used": int(round(session.used)),
         "losses": int(round(session.losses)),

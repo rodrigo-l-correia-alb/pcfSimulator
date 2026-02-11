@@ -6,7 +6,7 @@ from simulator.status import Status
 class Session:
     def __init__(self,
                  date: datetime,
-                 duration: float,
+                 duration: float = 0.0,
                  used: float = 0.0,
                  losses: float = 0.0,
                  requests: int = 0.0,
